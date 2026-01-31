@@ -55,6 +55,7 @@ public class GamblingManager : MonoBehaviour
 
     void SwitchTurn()
     {
+        if (isGameOver || isWinner) return;
         isPlayerTurn = !isPlayerTurn;
 
         if (isPlayerTurn)
@@ -69,13 +70,19 @@ public class GamblingManager : MonoBehaviour
         {
             Debug.Log("Enemy Win");
             isGameOver = true;
+            PlayAnimationEnd(playerAnimator);
         }
 
         if (!isPlayerTurn && maskObjectsEnemy.Count <= 0)
         {
             Debug.Log("Player Win");
             isWinner = true;
+            PlayAnimationEnd(enemyAnimator);
         }
+    }
+
+    public void PlayAnimationEnd(Animator animator){
+        animator.SetTrigger("HeadShake");
     }
 
 
@@ -110,6 +117,7 @@ public class GamblingManager : MonoBehaviour
 
     public void OnShuffleDice(Animator animator)
     {
+        if (isGameOver || isWinner) return;
         animator.SetTrigger("IsShuffle");
 
         StartCoroutine(WaitShuffleToSpawnDice());
@@ -119,11 +127,13 @@ public class GamblingManager : MonoBehaviour
     public IEnumerator WaitShuffleToSpawnDice()
     {
         yield return new WaitForSeconds(3f);
+        if (isGameOver || isWinner) yield break;
         SpawnDice();
     }
 
     public void ButtonActionOver()
     {
+        if (isGameOver || isWinner) return;
         if (diceObjectsEnemyCount > 5)
         {
             SwitchTurn();
@@ -137,6 +147,7 @@ public class GamblingManager : MonoBehaviour
 
     public void ButtonActionFit()
     {
+        if (isGameOver || isWinner) return;
         if (diceObjectsEnemyCount == 5)
         {
             SwitchTurn();
@@ -150,6 +161,7 @@ public class GamblingManager : MonoBehaviour
 
     public void ButtonActionUnder()
     {
+        if (isGameOver || isWinner) return;
         if (diceObjectsEnemyCount < 5)
         {
             SwitchTurn();
@@ -163,6 +175,7 @@ public class GamblingManager : MonoBehaviour
 
     public void EnemyGuess()
     {
+        if (isGameOver || isWinner) return;
         int guess = UnityEngine.Random.Range(0, 3);
 
         bool correct = false;
@@ -230,6 +243,7 @@ public class GamblingManager : MonoBehaviour
     {
         enemyAnimator.SetTrigger("MaskOff");
         yield return new WaitForSeconds(1.5f); // waktu animasi
+        if (isGameOver || isWinner) yield break; // Stop coroutine
         SwitchTurn();
     }
 
@@ -256,6 +270,7 @@ public class GamblingManager : MonoBehaviour
     public IEnumerator WaitOpenMaskPlayerAfterSpawnDice()
     {
         yield return new WaitForSeconds(2.0f);
+        if (isGameOver || isWinner) yield break; // Stop coroutine
         OnOpenMaskPlayer();
         isWaitingPlayerToGuess = true;
     }
@@ -263,6 +278,7 @@ public class GamblingManager : MonoBehaviour
     public IEnumerator WaitOpenMaskEnemyAfterSpawnDice()
     {
         yield return new WaitForSeconds(2.0f);
+        if (isGameOver || isWinner) yield break; // Stop coroutine
         OnOpenMaskEnemy();
         isWaitingEnemyToGuess = true;
     }
@@ -270,6 +286,7 @@ public class GamblingManager : MonoBehaviour
     // spawn prefab dice
     public void SpawnDice()
     {
+        if (isGameOver || isWinner) return;
         Debug.Log("Dice Spawned");
 
         // Random pilih 1-3 DiceObject
