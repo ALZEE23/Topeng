@@ -16,7 +16,7 @@ public class GamblingManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public void TurnOnGambling()
@@ -65,5 +65,10 @@ public class GamblingManager : MonoBehaviour
         }
         OnMaskedUsed(false);
         TurnOnGambling();
+    }
+
+    public void SpawnDice()
+    {
+        Debug.Log("Dice Spawned");
     }
 }

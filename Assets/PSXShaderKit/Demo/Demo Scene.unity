@@ -1009,7 +1009,7 @@ Transform:
   m_GameObject: {fileID: 1047882106}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.55, y: -2.731, z: 1.092}
+  m_LocalPosition: {x: -3.55, y: -2.811, z: 1.273}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1140,7 +1140,7 @@ Transform:
   m_GameObject: {fileID: 1188549040}
   serializedVersion: 2
   m_LocalRotation: {x: 0.23741414, y: 0.0064860363, z: -0.0005063922, w: 0.97138673}
-  m_LocalPosition: {x: -3.5623603, y: -2.2697515, z: 0.20481491}
+  m_LocalPosition: {x: -3.5623603, y: -2.3497517, z: 0.38581514}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1163,7 +1163,7 @@ MonoBehaviour:
   - m_Script
   m_LockStageInInspector: 
   m_StreamingVersion: 20170927
-  m_Priority: 10
+  m_Priority: 11
   m_StandbyUpdate: 2
   m_LookAt: {fileID: 1047882107}
   m_Follow: {fileID: 1047882107}
@@ -1360,7 +1360,7 @@ MonoBehaviour:
   m_BlendUpdateMethod: 1
   m_DefaultBlend:
     m_Style: 1
-    m_Time: 2
+    m_Time: 0.2
     m_CustomCurve:
       serializedVersion: 2
       m_Curve: []
