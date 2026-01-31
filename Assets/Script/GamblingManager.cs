@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GamblingManager : MonoBehaviour
@@ -31,6 +32,8 @@ public class GamblingManager : MonoBehaviour
 
     public bool isWaitingPlayerToGuess = false;
     public bool isWaitingEnemyToGuess = false;
+    public bool isGameOver = false;
+    public bool isWinner = false;
 
     void Start()
     {
@@ -46,6 +49,8 @@ public class GamblingManager : MonoBehaviour
         {
             OnMaskedUsedPlayer();
         }
+
+        EndGame();
     }
 
     void SwitchTurn()
@@ -58,9 +63,25 @@ public class GamblingManager : MonoBehaviour
             OnShuffleDice(enemyAnimator);
     }
 
+    public void EndGame()
+    {
+        if (isPlayerTurn && maskObjectsPlayer.Count <= 0)
+        {
+            Debug.Log("Enemy Win");
+            isGameOver = true;
+        }
+
+        if (!isPlayerTurn && maskObjectsEnemy.Count <= 0)
+        {
+            Debug.Log("Player Win");
+            isWinner = true;
+        }
+    }
+
 
     public void TurnOnGambling()
     {
+        if (isGameOver || isWinner) return;
         isSpawnedDice = false;
         isSpawnedEnemyDice = false;
         Debug.Log("Gambling Turned On");
@@ -110,6 +131,7 @@ public class GamblingManager : MonoBehaviour
         else
         {
             OnUnmaskPlayer();
+            ReduceMaskPlayer();
         }
     }
 
@@ -122,6 +144,7 @@ public class GamblingManager : MonoBehaviour
         else
         {
             OnUnmaskPlayer();
+            ReduceMaskPlayer();
         }
     }
 
@@ -134,6 +157,7 @@ public class GamblingManager : MonoBehaviour
         else
         {
             OnUnmaskPlayer();
+            ReduceMaskPlayer();
         }
     }
 
@@ -154,6 +178,7 @@ public class GamblingManager : MonoBehaviour
         else
         {
             StartCoroutine(EnemyLoseTurn());
+            ReduceMaskEnemy();
         }
 
     }
@@ -172,6 +197,26 @@ public class GamblingManager : MonoBehaviour
         foreach (Transform child in maskEnemyParent.transform)
         {
             maskObjectsEnemy.Add(child.gameObject);
+        }
+    }
+
+    public void ReduceMaskPlayer()
+    {
+        if (maskObjectsPlayer.Count > 0)
+        {
+            GameObject maskToRemove = maskObjectsPlayer[maskObjectsPlayer.Count - 1];
+            maskObjectsPlayer.RemoveAt(maskObjectsPlayer.Count - 1);
+            Destroy(maskToRemove);
+        }
+    }
+
+    public void ReduceMaskEnemy()
+    {
+        if (maskObjectsEnemy.Count > 0)
+        {
+            GameObject maskToRemove = maskObjectsEnemy[maskObjectsEnemy.Count - 1];
+            maskObjectsEnemy.RemoveAt(maskObjectsEnemy.Count - 1);
+            Destroy(maskToRemove);
         }
     }
 
@@ -244,9 +289,9 @@ public class GamblingManager : MonoBehaviour
 
                 // SPAWN DENGAN RANDOM OFFSET KECIL - BIAR GAK TEMBUS
                 Vector3 randomOffset = new Vector3(
-                    UnityEngine.Random.Range(-0.2f, 0.2f),
-                    UnityEngine.Random.Range(0f, 0.1f),
-                    UnityEngine.Random.Range(-0.2f, 0.2f)
+                    UnityEngine.Random.Range(-0.05f, 0.05f),
+                    UnityEngine.Random.Range(0f, 0.05f),
+                    UnityEngine.Random.Range(-0.05f, 0.05f)
                 );
                 Vector3 spawnPos = diceSpawnPoint.position + randomOffset;
                 GameObject spawnedDice = Instantiate(selectedDice.diceGameObject, spawnPos, diceSpawnPoint.rotation);
