@@ -20,12 +20,23 @@ public class GamblingManager : MonoBehaviour
     public Transform diceEnemySpawnPoint;
 
     public List<DiceObject> diceObjects;
-    public int dificultyLevel = 1;
-    public int totalCountToGuess;
+    public int diceObjectsPlayerCount;
+    public int diceObjectsEnemyCount;
+
+    public GameObject maskParent;
+    public GameObject maskEnemyParent;
+
+    public List<GameObject> maskObjectsPlayer;
+    public List<GameObject> maskObjectsEnemy;
+
+    public bool isWaitingPlayerToGuess = false;
+    public bool isWaitingEnemyToGuess = false;
 
     void Start()
     {
         TurnOnGambling();
+        CheckMaskPlayer();
+        CheckMaskEnemy();
     }
 
     // Update is called once per frame
@@ -33,9 +44,20 @@ public class GamblingManager : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(1) && isSpawnedEnemyDice == true)
         {
-            OnMaskedUsed();
+            OnMaskedUsedPlayer();
         }
     }
+
+    void SwitchTurn()
+    {
+        isPlayerTurn = !isPlayerTurn;
+
+        if (isPlayerTurn)
+            OnShuffleDice(playerAnimator);
+        else
+            OnShuffleDice(enemyAnimator);
+    }
+
 
     public void TurnOnGambling()
     {
@@ -53,19 +75,16 @@ public class GamblingManager : MonoBehaviour
 
     }
 
-    public void OnMaskedUsed()
+    public void OnMaskedUsedPlayer()
     {
-        Debug.Log("Masked Used in Gambling");
-        if (isPlayerTurn == true)
-        {
-            enemyAnimator.SetTrigger("UseMask");
-        }
-        else
-        {
-            playerAnimator.SetTrigger("UseMask");
-            isMaskedUsed = true;
-            CameraPov.SetActive(true);
-        }
+        playerAnimator.SetTrigger("UseMask");
+        isMaskedUsed = true;
+        CameraPov.SetActive(true);
+    }
+
+    public void OnMaskedUsedEnemy()
+    {
+        enemyAnimator.SetTrigger("UseMask");
     }
 
     public void OnShuffleDice(Animator animator)
@@ -78,100 +97,205 @@ public class GamblingManager : MonoBehaviour
 
     public IEnumerator WaitShuffleToSpawnDice()
     {
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(3f);
         SpawnDice();
-    }
-
-    public void OnShowDiceResult()
-    {
-        Debug.Log("Dice Result Shown");
-        if (isPlayerTurn == false)
-        {
-            isPlayerTurn = true;
-        }
-        else
-        {
-            isPlayerTurn = false;
-        }
-        // OnMaskedUsed();
-        TurnOnGambling();
-    }
-
-    // player start gambling or guesing
-    public void OnGambling()
-    {
-        Debug.Log("Gambling Started");
-        // player 
-        if (isPlayerTurn)
-        {
-
-        }
-        else
-        {
-
-        }
     }
 
     public void ButtonActionOver()
     {
-        if (isPlayerTurn)
+        if (diceObjectsEnemyCount > 5)
         {
-
+            SwitchTurn();
         }
-
+        else
+        {
+            OnUnmaskPlayer();
+        }
     }
 
     public void ButtonActionFit()
     {
-
+        if (diceObjectsEnemyCount == 5)
+        {
+            SwitchTurn();
+        }
+        else
+        {
+            OnUnmaskPlayer();
+        }
     }
 
     public void ButtonActionUnder()
     {
-
-    }
-
-    public void OnUnmask()
-    {
-        Debug.Log("Unmasking");
-        if (isPlayerTurn)
+        if (diceObjectsEnemyCount < 5)
         {
-            playerAnimator.SetTrigger("MaskOff");
-            CameraPov.SetActive(false);
+            SwitchTurn();
         }
         else
         {
-            enemyAnimator.SetTrigger("MaskOff");
+            OnUnmaskPlayer();
+        }
+    }
+
+    public void EnemyGuess()
+    {
+        int guess = UnityEngine.Random.Range(0, 3);
+
+        bool correct = false;
+
+        if (guess == 0 && diceObjectsPlayerCount > 7) correct = true;
+        if (guess == 1 && diceObjectsPlayerCount == 7) correct = true;
+        if (guess == 2 && diceObjectsPlayerCount < 7) correct = true;
+
+        if (correct)
+        {
+            SwitchTurn();
+        }
+        else
+        {
+            StartCoroutine(EnemyLoseTurn());
         }
 
     }
 
-    public IEnumerator WaitUnmaskAfterSpawnDice()
+
+    public void CheckMaskPlayer()
+    {
+        foreach (Transform child in maskParent.transform)
+        {
+            maskObjectsPlayer.Add(child.gameObject);
+        }
+    }
+
+    public void CheckMaskEnemy()
+    {
+        foreach (Transform child in maskEnemyParent.transform)
+        {
+            maskObjectsEnemy.Add(child.gameObject);
+        }
+    }
+
+    public void OnUnmaskEnemy()
+    {
+        enemyAnimator.SetTrigger("MaskOff");
+        isPlayerTurn = true;
+    }
+
+    public IEnumerator EnemyLoseTurn()
+    {
+        enemyAnimator.SetTrigger("MaskOff");
+        yield return new WaitForSeconds(1.5f); // waktu animasi
+        SwitchTurn();
+    }
+
+
+    public void OnUnmaskPlayer()
+    {
+        playerAnimator.SetTrigger("MaskOff");
+        OnShuffleDice(enemyAnimator);
+    }
+
+    public void OnOpenMaskPlayer()
+    {
+        playerAnimator.SetTrigger("OpenMask");
+        CameraPov.SetActive(false);
+
+    }
+
+    public void OnOpenMaskEnemy()
+    {
+        enemyAnimator.SetTrigger("OpenMask");
+        EnemyGuess();
+    }
+
+    public IEnumerator WaitOpenMaskPlayerAfterSpawnDice()
     {
         yield return new WaitForSeconds(2.0f);
-        OnUnmask();
+        OnOpenMaskPlayer();
+        isWaitingPlayerToGuess = true;
+    }
+
+    public IEnumerator WaitOpenMaskEnemyAfterSpawnDice()
+    {
+        yield return new WaitForSeconds(2.0f);
+        OnOpenMaskEnemy();
+        isWaitingEnemyToGuess = true;
     }
 
     // spawn prefab dice
     public void SpawnDice()
     {
         Debug.Log("Dice Spawned");
+
+        // Random pilih 1-3 DiceObject
+        int numDice = UnityEngine.Random.Range(1, 4); // 1, 2, or 3
+        int totalCount = 0;
+
         if (isPlayerTurn)
         {
             isSpawnedDice = true;
-            OnMaskedUsed();
-            Debug.Log("Player Dice Spawned");
-            //spawn logic here
-            Instantiate(diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)].diceGameObject, diceSpawnPoint.position, Quaternion.identity);
-            StartCoroutine(WaitUnmaskAfterSpawnDice());
+            OnMaskedUsedEnemy();
+
+            // Spawn dan hitung total
+            for (int i = 0; i < numDice; i++)
+            {
+                DiceObject selectedDice = diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)];
+                totalCount += selectedDice.diceValue; // Jumlahkan diceValue
+
+                Vector3 spawnPos = diceSpawnPoint.position + new Vector3(i * 0.5f, 0, 0);
+                GameObject spawnedDice = Instantiate(selectedDice.diceGameObject, spawnPos, Quaternion.identity);
+
+                // Freeze position agar tidak kepental
+                Rigidbody rb = spawnedDice.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = true; // Matikan physics
+                }
+
+                // Auto disable setelah 2 detik
+                StartCoroutine(DisableDiceAfterDelay(spawnedDice, 2.0f));
+            }
+
+            diceObjectsPlayerCount = totalCount; // Simpan total
+            Debug.Log($"Player Dice Spawned - Total Count: {diceObjectsPlayerCount}");
+            StartCoroutine(WaitOpenMaskEnemyAfterSpawnDice());
         }
         else
         {
             isSpawnedEnemyDice = true;
-            Debug.Log("Enemy Dice Spawned");
-            Instantiate(diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)].diceGameObject, diceEnemySpawnPoint.position, Quaternion.identity);
-            StartCoroutine(WaitUnmaskAfterSpawnDice());
-            //spawn logic here
+
+            // Spawn dan hitung total
+            for (int i = 0; i < numDice; i++)
+            {
+                DiceObject selectedDice = diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)];
+                totalCount += selectedDice.diceValue; // Jumlahkan diceValue
+
+                Vector3 spawnPos = diceEnemySpawnPoint.position + new Vector3(i * 0.5f, 0, 0);
+                GameObject spawnedDice = Instantiate(selectedDice.diceGameObject, spawnPos, Quaternion.identity);
+
+                // Freeze position agar tidak kepental
+                Rigidbody rb = spawnedDice.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = true; // Matikan physics
+                }
+
+                // Auto disable setelah 2 detik
+                StartCoroutine(DisableDiceAfterDelay(spawnedDice, 2.0f));
+            }
+
+            diceObjectsEnemyCount = totalCount; // Simpan total
+            Debug.Log($"Enemy Dice Spawned - Total Count: {diceObjectsEnemyCount}");
+            StartCoroutine(WaitOpenMaskPlayerAfterSpawnDice());
+        }
+    }
+
+    private IEnumerator DisableDiceAfterDelay(GameObject dice, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (dice != null)
+        {
+            dice.SetActive(false);
         }
     }
 
