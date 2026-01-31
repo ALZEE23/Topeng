@@ -242,8 +242,14 @@ public class GamblingManager : MonoBehaviour
                 DiceObject selectedDice = diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)];
                 totalCount += selectedDice.diceValue; // Jumlahkan diceValue
 
-                Vector3 spawnPos = diceSpawnPoint.position + new Vector3(i * 0.5f, 0, 0);
-                GameObject spawnedDice = Instantiate(selectedDice.diceGameObject, spawnPos, Quaternion.identity);
+                // SPAWN DENGAN RANDOM OFFSET KECIL - BIAR GAK TEMBUS
+                Vector3 randomOffset = new Vector3(
+                    UnityEngine.Random.Range(-0.2f, 0.2f),
+                    UnityEngine.Random.Range(0f, 0.1f),
+                    UnityEngine.Random.Range(-0.2f, 0.2f)
+                );
+                Vector3 spawnPos = diceSpawnPoint.position + randomOffset;
+                GameObject spawnedDice = Instantiate(selectedDice.diceGameObject, spawnPos, diceSpawnPoint.rotation);
 
                 // Freeze position agar tidak kepental
                 Rigidbody rb = spawnedDice.GetComponent<Rigidbody>();
@@ -270,8 +276,14 @@ public class GamblingManager : MonoBehaviour
                 DiceObject selectedDice = diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)];
                 totalCount += selectedDice.diceValue; // Jumlahkan diceValue
 
-                Vector3 spawnPos = diceEnemySpawnPoint.position + new Vector3(i * 0.5f, 0, 0);
-                GameObject spawnedDice = Instantiate(selectedDice.diceGameObject, spawnPos, Quaternion.identity);
+                // SPAWN DENGAN RANDOM OFFSET KECIL - BIAR GAK TEMBUS
+                Vector3 randomOffset = new Vector3(
+                    UnityEngine.Random.Range(-0.05f, 0.05f),
+                    UnityEngine.Random.Range(0f, 0.05f),
+                    UnityEngine.Random.Range(-0.05f, 0.05f)
+                );
+                Vector3 spawnPos = diceEnemySpawnPoint.position + randomOffset;
+                GameObject spawnedDice = Instantiate(selectedDice.diceGameObject, spawnPos, diceEnemySpawnPoint.rotation);
 
                 // Freeze position agar tidak kepental
                 Rigidbody rb = spawnedDice.GetComponent<Rigidbody>();
