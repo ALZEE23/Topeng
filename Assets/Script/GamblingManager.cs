@@ -21,18 +21,17 @@ public class GamblingManager : MonoBehaviour
 
     public List<DiceObject> diceObjects;
     public int dificultyLevel = 1;
-
-    public
+    public int totalCountToGuess;
 
     void Start()
     {
-        // TurnOnGambling();
+        TurnOnGambling();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && isSpawnedEnemyDice == true)
+        if (Input.GetMouseButtonDown(1) && isSpawnedEnemyDice == true)
         {
             OnMaskedUsed();
         }
@@ -113,6 +112,25 @@ public class GamblingManager : MonoBehaviour
         }
     }
 
+    public void ButtonActionOver()
+    {
+        if (isPlayerTurn)
+        {
+
+        }
+
+    }
+
+    public void ButtonActionFit()
+    {
+
+    }
+
+    public void ButtonActionUnder()
+    {
+
+    }
+
     public void OnUnmask()
     {
         Debug.Log("Unmasking");
@@ -126,9 +144,6 @@ public class GamblingManager : MonoBehaviour
             enemyAnimator.SetTrigger("MaskOff");
         }
 
-
-        //testing 
-        OnShowDiceResult();
     }
 
     public IEnumerator WaitUnmaskAfterSpawnDice()
@@ -147,12 +162,14 @@ public class GamblingManager : MonoBehaviour
             OnMaskedUsed();
             Debug.Log("Player Dice Spawned");
             //spawn logic here
+            Instantiate(diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)].diceGameObject, diceSpawnPoint.position, Quaternion.identity);
             StartCoroutine(WaitUnmaskAfterSpawnDice());
         }
         else
         {
             isSpawnedEnemyDice = true;
             Debug.Log("Enemy Dice Spawned");
+            Instantiate(diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)].diceGameObject, diceEnemySpawnPoint.position, Quaternion.identity);
             StartCoroutine(WaitUnmaskAfterSpawnDice());
             //spawn logic here
         }
@@ -165,4 +182,12 @@ public class DiceObject
 {
     public int diceValue;
     public GameObject diceGameObject;
+}
+
+public enum AnimationParameter
+{
+    IsShuffle,
+    UseMask,
+    MaskOff,
+    OpenMask
 }
