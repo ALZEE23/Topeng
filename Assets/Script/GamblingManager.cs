@@ -10,6 +10,7 @@ public class GamblingManager : MonoBehaviour
     // Start is called before the first frame update
     public Animator enemyAnimator;
     public Animator playerAnimator;
+    public Animator cowAnimator;
     public bool isPlayerTurn = false;
     // public GameObject CameraGambling;
     public GameObject CameraPov;
@@ -79,6 +80,7 @@ public class GamblingManager : MonoBehaviour
             Debug.Log("Player Win");
             isWinner = true;
             PlayAnimationEnd(enemyAnimator);
+            cowAnimator.SetTrigger("Moo");
         }
     }
 
@@ -278,7 +280,7 @@ public class GamblingManager : MonoBehaviour
 
     public IEnumerator WaitOpenMaskPlayerAfterSpawnDice()
     {
-        yield return new WaitForSeconds(0.05f);
+        yield return new WaitForSeconds(0.18f);
         if (isGameOver || isWinner) yield break; // Stop coroutine
         if (!isMaskedUsed)
         {
