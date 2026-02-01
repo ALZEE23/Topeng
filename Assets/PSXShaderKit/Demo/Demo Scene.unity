@@ -2454,6 +2454,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyAnimator: {fileID: 2011284165}
   playerAnimator: {fileID: 1149014808}
+  cowAnimator: {fileID: 640031089}
   isPlayerTurn: 0
   CameraPov: {fileID: 1713979927}
   isMaskedUsed: 0
@@ -7467,6 +7468,14 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 5ea31a53b792fea6084b48867be59445, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -5610832936595009893, guid: 5ea31a53b792fea6084b48867be59445, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 129.6594
+      objectReference: {fileID: 0}
+    - target: {fileID: -5610832936595009893, guid: 5ea31a53b792fea6084b48867be59445, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 129.8056
       objectReference: {fileID: 0}
     - target: {fileID: -4624831550973308889, guid: 5ea31a53b792fea6084b48867be59445, type: 3}
       propertyPath: m_LocalScale.x
