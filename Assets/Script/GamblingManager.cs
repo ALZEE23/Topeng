@@ -37,6 +37,9 @@ public class GamblingManager : MonoBehaviour
     public bool isGameOver = false;
     public bool isWinner = false;
 
+    public GameObject LosePanel;
+    public GameObject WinPanel;
+
     void Start()
     {
         TurnOnGambling();
@@ -73,6 +76,8 @@ public class GamblingManager : MonoBehaviour
             Debug.Log("Enemy Win");
             isGameOver = true;
             PlayAnimationEnd(playerAnimator);
+            cowAnimator.SetTrigger("Moo");
+            LosePanel.SetActive(true);
         }
 
         if (maskObjectsEnemy.Count <= 0)
@@ -80,7 +85,7 @@ public class GamblingManager : MonoBehaviour
             Debug.Log("Player Win");
             isWinner = true;
             PlayAnimationEnd(enemyAnimator);
-            cowAnimator.SetTrigger("Moo");
+            WinPanel.SetActive(true);
         }
     }
 
@@ -138,13 +143,17 @@ public class GamblingManager : MonoBehaviour
     public void ButtonActionOver()
     {
         if (isGameOver || isWinner) return;
+        if (isMaskedUsed)
+        {
+            OnUnmaskPlayer();
+        }
         if (diceObjectsEnemyCount > 5)
         {
             SwitchTurn();
         }
         else
         {
-            OnUnmaskPlayer();
+            OnShuffleDice(enemyAnimator);
             ReduceMaskPlayer();
         }
     }
@@ -152,13 +161,17 @@ public class GamblingManager : MonoBehaviour
     public void ButtonActionFit()
     {
         if (isGameOver || isWinner) return;
+        if (isMaskedUsed)
+        {
+            OnUnmaskPlayer();
+        }
         if (diceObjectsEnemyCount == 5)
         {
             SwitchTurn();
         }
         else
         {
-            OnUnmaskPlayer();
+            OnShuffleDice(enemyAnimator);
             ReduceMaskPlayer();
         }
     }
@@ -166,13 +179,17 @@ public class GamblingManager : MonoBehaviour
     public void ButtonActionUnder()
     {
         if (isGameOver || isWinner) return;
+        if (isMaskedUsed)
+        {
+            OnUnmaskPlayer();
+        }
         if (diceObjectsEnemyCount < 5)
         {
             SwitchTurn();
         }
         else
         {
-            OnUnmaskPlayer();
+            OnShuffleDice(enemyAnimator);
             ReduceMaskPlayer();
         }
     }
@@ -262,6 +279,7 @@ public class GamblingManager : MonoBehaviour
     {
         playerAnimator.SetTrigger("OpenMask");
         CameraPov.SetActive(false);
+        isMaskedUsed = false;
 
     }
 
@@ -287,6 +305,7 @@ public class GamblingManager : MonoBehaviour
             EnemyHitPlayer();
             yield break;
         }
+        yield return new WaitForSeconds(1.5f); // tunggu animasi hit selesai
         OnOpenMaskPlayer();
         isWaitingPlayerToGuess = true;
     }
