@@ -1,0 +1,317 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GamblingManager : MonoBehaviour
+{
+    // Start is called before the first frame update
+    public Animator enemyAnimator;
+    public Animator playerAnimator;
+    public bool isPlayerTurn = false;
+    // public GameObject CameraGambling;
+    public GameObject CameraPov;
+
+    public bool isMaskedUsed = false;
+    public bool isSpawnedDice = false;
+    public bool isSpawnedEnemyDice = false;
+
+    public Transform diceSpawnPoint;
+    public Transform diceEnemySpawnPoint;
+
+    public List<DiceObject> diceObjects;
+    public int diceObjectsPlayerCount;
+    public int diceObjectsEnemyCount;
+
+    public GameObject maskParent;
+    public GameObject maskEnemyParent;
+
+    public List<GameObject> maskObjectsPlayer;
+    public List<GameObject> maskObjectsEnemy;
+
+    public bool isWaitingPlayerToGuess = false;
+    public bool isWaitingEnemyToGuess = false;
+
+    void Start()
+    {
+        TurnOnGambling();
+        CheckMaskPlayer();
+        CheckMaskEnemy();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetMouseButtonDown(1) && isSpawnedEnemyDice == true)
+        {
+            OnMaskedUsedPlayer();
+        }
+    }
+
+    void SwitchTurn()
+    {
+        isPlayerTurn = !isPlayerTurn;
+
+        if (isPlayerTurn)
+            OnShuffleDice(playerAnimator);
+        else
+            OnShuffleDice(enemyAnimator);
+    }
+
+
+    public void TurnOnGambling()
+    {
+        isSpawnedDice = false;
+        isSpawnedEnemyDice = false;
+        Debug.Log("Gambling Turned On");
+        if (isPlayerTurn)
+        {
+            OnShuffleDice(playerAnimator);
+        }
+        else
+        {
+            OnShuffleDice(enemyAnimator);
+        }
+
+    }
+
+    public void OnMaskedUsedPlayer()
+    {
+        playerAnimator.SetTrigger("UseMask");
+        isMaskedUsed = true;
+        CameraPov.SetActive(true);
+    }
+
+    public void OnMaskedUsedEnemy()
+    {
+        enemyAnimator.SetTrigger("UseMask");
+    }
+
+    public void OnShuffleDice(Animator animator)
+    {
+        animator.SetTrigger("IsShuffle");
+
+        StartCoroutine(WaitShuffleToSpawnDice());
+        Debug.Log("Dice Shuffled");
+    }
+
+    public IEnumerator WaitShuffleToSpawnDice()
+    {
+        yield return new WaitForSeconds(3f);
+        SpawnDice();
+    }
+
+    public void ButtonActionOver()
+    {
+        if (diceObjectsEnemyCount > 5)
+        {
+            SwitchTurn();
+        }
+        else
+        {
+            OnUnmaskPlayer();
+        }
+    }
+
+    public void ButtonActionFit()
+    {
+        if (diceObjectsEnemyCount == 5)
+        {
+            SwitchTurn();
+        }
+        else
+        {
+            OnUnmaskPlayer();
+        }
+    }
+
+    public void ButtonActionUnder()
+    {
+        if (diceObjectsEnemyCount < 5)
+        {
+            SwitchTurn();
+        }
+        else
+        {
+            OnUnmaskPlayer();
+        }
+    }
+
+    public void EnemyGuess()
+    {
+        int guess = UnityEngine.Random.Range(0, 3);
+
+        bool correct = false;
+
+        if (guess == 0 && diceObjectsPlayerCount > 7) correct = true;
+        if (guess == 1 && diceObjectsPlayerCount == 7) correct = true;
+        if (guess == 2 && diceObjectsPlayerCount < 7) correct = true;
+
+        if (correct)
+        {
+            SwitchTurn();
+        }
+        else
+        {
+            StartCoroutine(EnemyLoseTurn());
+        }
+
+    }
+
+
+    public void CheckMaskPlayer()
+    {
+        foreach (Transform child in maskParent.transform)
+        {
+            maskObjectsPlayer.Add(child.gameObject);
+        }
+    }
+
+    public void CheckMaskEnemy()
+    {
+        foreach (Transform child in maskEnemyParent.transform)
+        {
+            maskObjectsEnemy.Add(child.gameObject);
+        }
+    }
+
+    public void OnUnmaskEnemy()
+    {
+        enemyAnimator.SetTrigger("MaskOff");
+        isPlayerTurn = true;
+    }
+
+    public IEnumerator EnemyLoseTurn()
+    {
+        enemyAnimator.SetTrigger("MaskOff");
+        yield return new WaitForSeconds(1.5f); // waktu animasi
+        SwitchTurn();
+    }
+
+
+    public void OnUnmaskPlayer()
+    {
+        playerAnimator.SetTrigger("MaskOff");
+        OnShuffleDice(enemyAnimator);
+    }
+
+    public void OnOpenMaskPlayer()
+    {
+        playerAnimator.SetTrigger("OpenMask");
+        CameraPov.SetActive(false);
+
+    }
+
+    public void OnOpenMaskEnemy()
+    {
+        enemyAnimator.SetTrigger("OpenMask");
+        EnemyGuess();
+    }
+
+    public IEnumerator WaitOpenMaskPlayerAfterSpawnDice()
+    {
+        yield return new WaitForSeconds(2.0f);
+        OnOpenMaskPlayer();
+        isWaitingPlayerToGuess = true;
+    }
+
+    public IEnumerator WaitOpenMaskEnemyAfterSpawnDice()
+    {
+        yield return new WaitForSeconds(2.0f);
+        OnOpenMaskEnemy();
+        isWaitingEnemyToGuess = true;
+    }
+
+    // spawn prefab dice
+    public void SpawnDice()
+    {
+        Debug.Log("Dice Spawned");
+
+        // Random pilih 1-3 DiceObject
+        int numDice = UnityEngine.Random.Range(1, 4); // 1, 2, or 3
+        int totalCount = 0;
+
+        if (isPlayerTurn)
+        {
+            isSpawnedDice = true;
+            OnMaskedUsedEnemy();
+
+            // Spawn dan hitung total
+            for (int i = 0; i < numDice; i++)
+            {
+                DiceObject selectedDice = diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)];
+                totalCount += selectedDice.diceValue; // Jumlahkan diceValue
+
+                Vector3 spawnPos = diceSpawnPoint.position + new Vector3(i * 0.5f, 0, 0);
+                GameObject spawnedDice = Instantiate(selectedDice.diceGameObject, spawnPos, Quaternion.identity);
+
+                // Freeze position agar tidak kepental
+                Rigidbody rb = spawnedDice.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = true; // Matikan physics
+                }
+
+                // Auto disable setelah 2 detik
+                StartCoroutine(DisableDiceAfterDelay(spawnedDice, 2.0f));
+            }
+
+            diceObjectsPlayerCount = totalCount; // Simpan total
+            Debug.Log($"Player Dice Spawned - Total Count: {diceObjectsPlayerCount}");
+            StartCoroutine(WaitOpenMaskEnemyAfterSpawnDice());
+        }
+        else
+        {
+            isSpawnedEnemyDice = true;
+
+            // Spawn dan hitung total
+            for (int i = 0; i < numDice; i++)
+            {
+                DiceObject selectedDice = diceObjects[UnityEngine.Random.Range(0, diceObjects.Count)];
+                totalCount += selectedDice.diceValue; // Jumlahkan diceValue
+
+                Vector3 spawnPos = diceEnemySpawnPoint.position + new Vector3(i * 0.5f, 0, 0);
+                GameObject spawnedDice = Instantiate(selectedDice.diceGameObject, spawnPos, Quaternion.identity);
+
+                // Freeze position agar tidak kepental
+                Rigidbody rb = spawnedDice.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = true; // Matikan physics
+                }
+
+                // Auto disable setelah 2 detik
+                StartCoroutine(DisableDiceAfterDelay(spawnedDice, 2.0f));
+            }
+
+            diceObjectsEnemyCount = totalCount; // Simpan total
+            Debug.Log($"Enemy Dice Spawned - Total Count: {diceObjectsEnemyCount}");
+            StartCoroutine(WaitOpenMaskPlayerAfterSpawnDice());
+        }
+    }
+
+    private IEnumerator DisableDiceAfterDelay(GameObject dice, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (dice != null)
+        {
+            dice.SetActive(false);
+        }
+    }
+
+}
+
+[System.Serializable]
+public class DiceObject
+{
+    public int diceValue;
+    public GameObject diceGameObject;
+}
+
+public enum AnimationParameter
+{
+    IsShuffle,
+    UseMask,
+    MaskOff,
+    OpenMask
+}
