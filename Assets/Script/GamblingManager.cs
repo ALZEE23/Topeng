@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -66,14 +67,14 @@ public class GamblingManager : MonoBehaviour
 
     public void EndGame()
     {
-        if (isPlayerTurn && maskObjectsPlayer.Count <= 0)
+        if (maskObjectsPlayer.Count <= 0)
         {
             Debug.Log("Enemy Win");
             isGameOver = true;
             PlayAnimationEnd(playerAnimator);
         }
 
-        if (!isPlayerTurn && maskObjectsEnemy.Count <= 0)
+        if (maskObjectsEnemy.Count <= 0)
         {
             Debug.Log("Player Win");
             isWinner = true;
@@ -81,7 +82,8 @@ public class GamblingManager : MonoBehaviour
         }
     }
 
-    public void PlayAnimationEnd(Animator animator){
+    public void PlayAnimationEnd(Animator animator)
+    {
         animator.SetTrigger("HeadShake");
     }
 
@@ -126,7 +128,7 @@ public class GamblingManager : MonoBehaviour
 
     public IEnumerator WaitShuffleToSpawnDice()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(3.5f);
         if (isGameOver || isWinner) yield break;
         SpawnDice();
     }
@@ -267,10 +269,22 @@ public class GamblingManager : MonoBehaviour
         EnemyGuess();
     }
 
+    public void EnemyHitPlayer()
+    {
+        Debug.Log("Enemy Hits Player!");
+        ReduceMaskPlayer();
+        enemyAnimator.SetTrigger("HitPlayer");
+    }
+
     public IEnumerator WaitOpenMaskPlayerAfterSpawnDice()
     {
         yield return new WaitForSeconds(2.0f);
         if (isGameOver || isWinner) yield break; // Stop coroutine
+        if (!isMaskedUsed)
+        {
+            EnemyHitPlayer();
+            yield break;
+        }
         OnOpenMaskPlayer();
         isWaitingPlayerToGuess = true;
     }
@@ -284,7 +298,7 @@ public class GamblingManager : MonoBehaviour
     }
 
     // spawn prefab dice
-    public void SpawnDice()
+    public async Task SpawnDice()
     {
         if (isGameOver || isWinner) return;
         Debug.Log("Dice Spawned");
@@ -297,6 +311,8 @@ public class GamblingManager : MonoBehaviour
         {
             isSpawnedDice = true;
             OnMaskedUsedEnemy();
+
+            // await Task.Delay(1000); // delay sedikit biar animasi mask enemy keliatan
 
             // Spawn dan hitung total
             for (int i = 0; i < numDice; i++)
@@ -331,6 +347,8 @@ public class GamblingManager : MonoBehaviour
         else
         {
             isSpawnedEnemyDice = true;
+
+            await Task.Delay(800);
 
             // Spawn dan hitung total
             for (int i = 0; i < numDice; i++)
